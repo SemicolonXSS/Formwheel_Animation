@@ -45,4 +45,18 @@ $('webm').onclick=async()=>{if(!window.MediaRecorder||!HTMLCanvasElement.prototy
 document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(e.ctrlKey&&e.key.toLowerCase()==='z'){e.preventDefault();$('undo').click()}else if(e.code==='Space'){e.preventDefault();$('play').click()}else if(e.key==='ArrowLeft')$('prev').click();else if(e.key==='ArrowRight')$('next').click()});
 try{const saved=JSON.parse(localStorage.getItem(stateKey));if(saved?.version===1&&Array.isArray(saved.frames)&&saved.frames.length&&saved.frames.every(x=>typeof x==='string'&&x.startsWith('data:image/png;base64,'))){frames=saved.frames;$('fps').value=saved.fps||8;message('✓ 이전 작업 복원')}}catch{}refresh();
 })();
+</script><script>
+/* Secol Random 9 - animation helper controls */
+document.addEventListener('DOMContentLoaded',()=>{
+const fps=document.getElementById('fps'),counter=document.getElementById('counter');if(!fps)return;
+const bar=document.createElement('section');bar.style.cssText='display:flex;gap:8px;flex-wrap:wrap;padding:12px;border:1px solid #586080;border-radius:12px;margin:12px 0';
+bar.innerHTML='<b style="width:100%">🎲 애니메이션 도전 도구</b><button type="button" id="sr9fpsSlow">🐢 느리게 4FPS</button><button type="button" id="sr9fpsFast">⚡ 빠르게 16FPS</button><button type="button" id="sr9theme">🎯 랜덤 주제</button><button type="button" id="sr9counter">⏱️ 예상 길이</button><span id="sr9animationStatus" role="status"></span>';
+fps.closest('.playbar,.toolbar')?.insertAdjacentElement('afterend',bar);
+const status=document.getElementById('sr9animationStatus');
+function speed(v){fps.value=String(v);fps.dispatchEvent(new Event('input',{bubbles:true}));fps.dispatchEvent(new Event('change',{bubbles:true}));status.textContent='재생 속도 '+v+'FPS'}
+document.getElementById('sr9fpsSlow').onclick=()=>speed(4);document.getElementById('sr9fpsFast').onclick=()=>speed(16);
+const prompts=['공 튀기기','캐릭터 점프','피어나는 꽃','반짝이는 별','손 흔들기','문 열기','구름 이동'];
+document.getElementById('sr9theme').onclick=()=>{status.textContent='🎯 '+prompts[Math.floor(Math.random()*prompts.length)]};
+document.getElementById('sr9counter').onclick=()=>{const frameCount=document.querySelectorAll('#timeline > *').length;status.textContent=frameCount+'개 타임라인 항목 · 예상 '+(frameCount/Math.max(1,Number(fps.value)||8)).toFixed(2)+'초 (프레임 수는 타임라인 기준)'};
+});
 </script></body></html>
