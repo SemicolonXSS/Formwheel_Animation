@@ -17,6 +17,7 @@ const stateKey='fw-animation-project-v1',getfps=()=>Math.max(1,Math.min(24,Numbe
 function message(s){$('status').textContent=s}
 function decode(url,callback){const im=new Image();im.onload=()=>callback(im);im.src=url}
 function commit(){frames[index]=canvas.toDataURL('image/png');dirty=false;queueSave();renderTimeline()}
+window.addEventListener('fw-frame-object-commit',()=>{snapshot();commit()});
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(stateKey,JSON.stringify({version:1,width:W,height:H,fps:getfps(),frames}));message('✓ 브라우저에 자동 저장됨')}catch{message('⚠ 자동 저장 공간 부족 · JSON으로 저장하세요')}},500)}
 function refresh(){ctx.clearRect(0,0,W,H);oc.clearRect(0,0,W,H);const i=index;decode(frames[i],im=>{if(index===i&&!dirty)ctx.drawImage(im,0,0)});if($('skin').checked&&index>0){decode(frames[index-1],im=>{if(index===i){oc.globalAlpha=.25;oc.drawImage(im,0,0);oc.globalAlpha=1}})}$('counter').textContent=(index+1)+' / '+frames.length;renderTimeline()}
 function renderTimeline(){const root=$('timeline');root.replaceChildren();frames.forEach((f,i)=>{const b=document.createElement('button');b.className='frame'+(i===index?' selected':'');b.type='button';const im=document.createElement('img');im.src=f;im.alt='프레임 '+(i+1);const span=document.createElement('span');span.textContent='프레임 '+(i+1);b.append(im,span);b.onclick=()=>select(i);root.append(b)})}
