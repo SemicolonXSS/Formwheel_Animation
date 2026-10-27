@@ -23,17 +23,7 @@ function init(){
  scale.onchange=()=>{const o=selected();if(!o)return;o.scale=Math.max(5,Math.min(500,Number(scale.value)||100));redraw()};
  rotate.onchange=()=>{const o=selected();if(!o)return;o.rotation=Math.max(-360,Math.min(360,Number(rotate.value)||0));redraw()};
  importer.onchange=async e=>{const files=Array.from(e.target.files||[]).slice(0,8);for(const f of files){try{if(f.size>12e6)throw Error('12MB 이하 파일만 불러올 수 있어요');const url=URL.createObjectURL(f);let img;try{img=await new Promise((res,rej)=>{const v=new Image();v.onload=()=>res(v);v.onerror=()=>rej(Error('이미지를 읽을 수 없어요'));v.src=url})}finally{URL.revokeObjectURL(url)}const k=Math.min(1,300/Math.max(img.naturalWidth,img.naturalHeight));objects.push({img,w:img.naturalWidth*k,h:img.naturalHeight*k,x:400,y:225,scale:100,rotation:0});active=objects.length-1;moving=true;status.textContent=objects.length+'개 이미지 개체 · 적용하면 현재 프레임에 합쳐져요';redraw()}catch(err){status.textContent='⚠ '+err.message}}e.target.value=''};
- apply.onclick=()=>{if(!objects.length)return;const target=draw.getContext('2d');const before=target.getImageData(0,0,800,450);try{const temp=document.createElement('canvas');temp.width=800;temp.height=450;const tc=temp.getContext('2d');paint(tc,false);target.drawImage(temp,0,0);draw.dispatchEvent(new PointerEvent('pointercancel',{bubbles:false}));const png=draw.toDataURL('image/png');const selectedFrame=document.querySelector('#timeline .frame.selected');const thumbnail=selectedFrame?.querySelector('img');if(thumbnail)thumbnail.src=png;
- // The frame editor stores its own frame list. Update it through its existing drawing commit path:
- target.putImageData(before,0,0);
- const copy=document.createElement('canvas');copy.width=800;copy.height=450;copy.getContext('2d').drawImage(temp,0,0);
- const originalTool=document.querySelector('[data-tool].active'),pen=document.querySelector('[data-tool="pen"]');
- pen?.click();const rect=draw.getBoundingClientRect(),x=rect.left+Math.min(5,rect.width/800*5),y=rect.top+Math.min(5,rect.height/450*5);
- draw.dispatchEvent(new PointerEvent('pointerdown',{pointerId:110,pointerType:'mouse',clientX:x,clientY:y,cancelable:true}));
- target.putImageData(before,0,0);target.drawImage(temp,0,0);
- draw.dispatchEvent(new PointerEvent('pointerup',{pointerId:110,pointerType:'mouse',clientX:x,clientY:y}));
- originalTool?.click();reset();status.textContent='✓ 현재 프레임에 이미지가 적용되고 자동 저장됐어요';
- }catch(err){target.putImageData(before,0,0);status.textContent='⚠ 적용 실패: '+err.message}};
+ apply.onclick=()=>{if(!objects.length)return;const target=draw.getContext('2d');try{const temp=document.createElement('canvas');temp.width=800;temp.height=450;paint(temp.getContext('2d'),false);target.drawImage(temp,0,0);window.dispatchEvent(new Event('fw-frame-object-commit'));reset();status.textContent='✓ 현재 프레임에 이미지가 적용되고 자동 저장됐어요'}catch(err){status.textContent='⚠ 적용 실패: '+err.message}};
  discard.onclick=()=>{reset();status.textContent='개체 편집 취소'};
  // Prevent object previews from carrying over to another frame or playback.
  document.getElementById('timeline')?.addEventListener('click',e=>{if(e.target.closest('.frame')){if(objects.length)status.textContent='프레임을 변경해 미적용 개체가 취소됐어요';reset()}});
